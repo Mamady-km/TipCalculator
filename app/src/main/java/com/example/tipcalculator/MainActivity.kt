@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-
         setContent {
             TipCalculatorTheme {
                 Surface(
@@ -52,15 +51,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun TipTimeLayout() {
-
-    // L'état appartient à TipTimeLayout
     var amountInput by remember { mutableStateOf("") }
+    var tipInput by remember { mutableStateOf("") }
 
-    // Convertit le texte en Double
     val amount = amountInput.toDoubleOrNull() ?: 0.0
-
-    // Calcule le pourboire à 15 %
-    val tip = calculateTip(amount)
+    val tipPercent = tipInput.toDoubleOrNull() ?: 15.0
+    val tip = calculateTip(amount, tipPercent)
 
     Column(
         modifier = Modifier
@@ -70,14 +66,12 @@ fun TipTimeLayout() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         Text(
             text = stringResource(R.string.calculate_tip),
             modifier = Modifier
                 .padding(bottom = 16.dp, top = 40.dp)
-                .align(Alignment.Start)
+                .align(alignment = Alignment.Start)
         )
-
         EditNumberField(
             label = R.string.bill_amount,
             value = amountInput,
@@ -86,7 +80,14 @@ fun TipTimeLayout() {
                 .padding(bottom = 32.dp)
                 .fillMaxWidth()
         )
-
+        EditNumberField(
+            label = R.string.how_was_the_service,
+            value = tipInput,
+            onValueChange = { tipInput = it },
+            modifier = Modifier
+                .padding(bottom = 32.dp)
+                .fillMaxWidth()
+        )
         Text(
             text = stringResource(R.string.tip_amount, tip),
             style = MaterialTheme.typography.displaySmall
@@ -97,13 +98,11 @@ fun TipTimeLayout() {
 }
 
 /**
- * Calcule le pourboire à partir du montant de la facture.
- * Le pourcentage par défaut est de 15 %.
+ * Calculates the tip based on the user input and format the tip amount
+ * according to the local currency.
+ * Example would be "$10.00".
  */
-private fun calculateTip(
-    amount: Double,
-    tipPercent: Double = 15.0
-): String {
+private fun calculateTip(amount: Double, tipPercent: Double = 15.0): String {
     val tip = tipPercent / 100 * amount
     return NumberFormat.getCurrencyInstance().format(tip)
 }
@@ -118,13 +117,9 @@ fun EditNumberField(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        label = {
-            Text(stringResource(label))
-        },
+        label = { Text(stringResource(label)) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
-        ),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = modifier
     )
 }
